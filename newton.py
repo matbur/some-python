@@ -37,10 +37,9 @@ def row(n, k=4):
         (int, [int]) -> (str)
     '''
 
-    b = binomial
     l = []
     for i in xrange(n + 1):
-        l.append('{0:^{1}}'.format(b(n, i), k))
+        l.append('{0:^{1}}'.format(binomial(n, i), k))
     return ''.join(l)
 
 
@@ -51,24 +50,30 @@ def triangle(n, k=1):
         (int, [int]) -> ()
     '''
 
-    b = binomial
-    r = row
-    x = len(str(b(n, n / 2))) + k
-    y = len(str(r(n, x)))
+    x = len(str(binomial(n, n / 2))) + k
+    y = len(str(row(n, x)))
     for i in xrange(n + 1):
-        print '{0:^{1}}'.format(r(i, x), y)
+        print '{0:^{1}}'.format(row(i, x), y)
 
 
 if __name__ == '__main__':
-    import sys as s
+    import sys
 
     try:
-        a = int(s.argv[1])
-    except (TypeError, ValueError, IndexError):
-        a = 10
-    try:
-        b = int(s.argv[2])
-    except (TypeError, ValueError, IndexError):
-        b = 1
+        INT1 = int(sys.argv[1])
+    except IndexError:
+        INT1 = 10
+    except ValueError:
+        print '{} is not a integer'.format(sys.argv[1])
 
-    triangle(a, b)
+    try:
+        INT2 = int(sys.argv[2])
+    except IndexError:
+        INT2 = 1
+    except ValueError:
+        print '{} is not a integer'.format(sys.argv[2])
+
+    try:
+        triangle(INT1, INT2)
+    except:
+        pass
