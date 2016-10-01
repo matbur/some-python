@@ -1,0 +1,25 @@
+body {
+    color: gold;
+    background-color: black;
+    font-family: Arial, sans-serif;
+    text-align: center;
+}
+
+div {
+    text-align: left;
+    font-size: smaller;
+}
+
+a:hover, a:link, a:visited {
+    color: gold;
+}
+
+a:active {
+    color: white;
+}
+
+ul {
+    padding-left: 10px;
+}
+
+
