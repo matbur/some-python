@@ -1,0 +1,51 @@
+<AnswerButton>:
+    text_size: self.width, None
+    halign: 'center'
+
+<Quiz>:
+    id: quiz
+    check_button: check
+    next_button: next
+    question_label: question
+    answers_panel: answers
+
+    GridLayout:
+        cols: 1
+
+        GridLayout:
+            size_hint_y: .1
+            rows: 1
+
+            Button:
+                size_hint_x: self.height / self.parent.width
+                on_press: root.manager.current = 'menu'
+
+                Image:
+                    pos: self.parent.pos
+                    size: self.parent.size
+                    source: 'img/house.png'
+
+            Button:
+                id: check
+                text: 'sprawdz'
+                on_press: quiz.check_answer()
+
+            Button:
+                id: next
+                size_hint_x: 2 * self.height / self.parent.width
+                on_press: quiz.get_next()
+
+                Image:
+                    pos: self.parent.pos
+                    size: self.parent.size
+                    source: 'img/right_arrow.png'
+
+        QuestionLabel:
+            id: question
+            size_hint_y: 2 / 3.
+            text_size: self.width, None
+            halign: 'center'
+
+        BoxLayout:
+            id: answers
+            orientation: 'vertical'

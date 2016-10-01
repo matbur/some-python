@@ -1,0 +1,57 @@
+<Piece>:
+    background_color: 0, 1, 0, 1
+<White>:
+    canvas:
+        Color:
+            rgb: 1, 1, 1
+        Ellipse:
+            size: [self.size[0] * .9] * 2
+            pos: [i + self.size[0] / 20. for i in self.pos]
+<Black>:
+    canvas:
+        Color:
+            rgb: 0, 0, 0
+        Ellipse:
+            size: [self.size[0] * .9] * 2
+            pos: [i + self.size[0] / 20. for i in self.pos]
+<Whites>:
+    orientation: 'vertical'
+    Label:
+        text: 'White'
+    Label:
+        id: white
+        font_size: 40
+<Blacks>:
+    orientation: 'vertical'
+    Label:
+        text: 'Black'
+    Label:
+        id: black
+        font_size: 40
+
+<Buttons>:
+    halign: 'center'
+    background_color: 0, 0, 0, 1
+<NewGame>:
+    text: 'New\ngame'
+<Undo>:
+    text: 'Undo'
+<Redo>:
+    text: 'Redo'
+<RightButtons>:
+    orientation: 'vertical'
+    Undo:
+        id: undo
+    Redo:
+        id: redo
+
+<Game>:
+    size_hint: None, None
+    cols: 10
+    rows: 10
+
+<Square>:
+    anchor_x: 'center'
+    anchor_y: 'center'
+    Game:
+        size: [min(root.width, root.height)] * 2

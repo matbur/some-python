@@ -1,0 +1,32 @@
+<Menu>:
+    FloatLayout:
+        Button:
+            text: 'baza pytan'
+            size_hint_y: .2
+            pos_hint: {'y': .5}
+            on_release: root.open_popup()
+
+        Button:
+            text: '-> quiz'
+            size_hint_y: .2
+            pos_hint: {'y': .2}
+            on_release: root.manager.current = 'quiz'
+
+<LoadDialog>:
+    orientation: "vertical"
+
+    FileChooserIconView:
+        id: file_chooser
+        dirselect: True
+
+    BoxLayout:
+        size_hint_y: None
+        height: 30
+
+        Button:
+            text: "Cancel"
+            on_release: root.cancel()
+
+        Button:
+            text: "Load"
+            on_release: root.load(file_chooser.selection)
