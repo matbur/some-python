@@ -4,7 +4,6 @@
 from random import randrange
 
 import yaml
-
 from random_name import RandomName
 
 __all__ = 'RandomTree',
@@ -14,7 +13,7 @@ __all__ = 'RandomTree',
 # RandomName = lambda: '{:0>2}'.format(next(l))
 
 
-class RandomTree(object):
+class RandomTree:
     """ Class generates random tree.
     """
 
@@ -56,20 +55,15 @@ class RandomTree(object):
         """
         return self.tree
 
-    def debug(self):
-        """ Method returns all information about the instance.
-        """
-        return 'hei: {height}, wid: {width}\n'.format(**vars(self)) + \
-               yaml.dump(self.tree)
-
     def __str__(self):
         return str(self.tree)
 
     def __repr__(self):
-        return repr(self.tree)
+        return 'hei: {height}, wid: {width}\n'.format(**vars(self)) + \
+               yaml.dump(self.tree)
 
 
 if __name__ == '__main__':
     print(
-        RandomTree(2, 2).debug()
+        repr(RandomTree(2, 2))
     )

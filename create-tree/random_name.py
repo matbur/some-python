@@ -6,7 +6,7 @@ from random import randrange, choice, sample
 __all__ = 'RandomName',
 
 
-class RandomName(object):
+class RandomName:
     """ Class generates random name.
     """
     vowels = 'aeiou'
@@ -21,9 +21,7 @@ class RandomName(object):
     def create_name(self):
         """ Method creates random name specified by fields in the class.
         """
-        name = []
-        for _ in range(self.syllables):
-            name.append(self.get_pair())
+        name = [self.get_pair() for _ in range(self.syllables)]
 
         ind_spaces = sample(range(1, self.syllables), self.spaces)
         for i in sorted(ind_spaces, reverse=True):
@@ -41,19 +39,14 @@ class RandomName(object):
         """
         return self.name
 
-    def debug(self):
-        """ Method returns all information about the instance.
-        """
-        return 'syl: {syllables}, spa: {spaces}, name: {name!r}'.format(**vars(self))
-
     def __str__(self):
         return self.name
 
     def __repr__(self):
-        return repr(self.name)
+        return 'syl: {syllables}, spa: {spaces}, name: {name!r}'.format(**vars(self))
 
 
 if __name__ == '__main__':
     for syl in range(10):
         for spa in range(syl):
-            print(RandomName(syl, spa).debug())
+            print(repr(RandomName(syl, spa)))
