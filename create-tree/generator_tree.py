@@ -11,7 +11,7 @@ from random_tree import RandomTree
 def recognize_type(items, path=''):
     """ Function yields path with information if it file or dir.
 
-        True if directory, False otherwise.
+        Second item in tuple is True if directory, False otherwise.
     """
     for item in items:
         if isinstance(item, str):
