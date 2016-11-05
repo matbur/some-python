@@ -61,7 +61,7 @@ def main():
     for item in recognize_type(tree.get()):
         create(*item)
 
-    print(tree.debug())
+    print(repr(tree))
 
 
 if __name__ == '__main__':
