@@ -1,7 +1,11 @@
-""" In this module signals are:
+""" Module provides functions which emulate flip-flops
+    commonly used in electronics circuits.
+
+    In this module signals are:
         t = Q(t)
         u = Q(t+1)
 """
+
 
 def J(t, u):
     """ JK flip-flop
@@ -11,7 +15,9 @@ def J(t, u):
         1|0|2
         1|1|2
     """
-    return (u, 2)[t]
+    t = int(t)
+    u = int(u)
+    return (u, '*')[t]
 
 
 def K(t, u):
@@ -22,7 +28,15 @@ def K(t, u):
         1|0|1
         1|1|0
     """
-    return (2, 1 - u)[t]
+    t = int(t)
+    u = int(u)
+    return ('*', 1 - u)[t]
+
+
+def JK(t, u):
+    """ Returns combined result of J and K as tuple.
+    """
+    return J(t, u), K(t, u)
 
 
 def D(t):
@@ -31,7 +45,7 @@ def D(t):
         0|0
         1|1
     """
-    return t
+    return int(t)
 
 
 def T(t, u):
@@ -49,4 +63,4 @@ if __name__ == '__main__':
     print('t u J K D T')
     for i in range(2):
         for j in range(2):
-            print(i, j, J(i, j), K(i, j), D(j), T(i, j))
+            print(i, j, J(i, j), K(i, j), D(j), T(i, j), JK(i, j))
