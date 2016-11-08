@@ -5,10 +5,6 @@ f = '{:0>3b}'
 hline = r'\hline'
 end_tabular = r'\end{tabular}'
 
-""" Function gets opening tag for table
-
-"""
-
 
 def begin_tabular(n):
     """ Function returns opening tag for table with width n.
