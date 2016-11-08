@@ -15,6 +15,8 @@ def J(t, u):
         1|0|2
         1|1|2
     """
+    if '*' in (t, u):
+        return '*'
     t = int(t)
     u = int(u)
     return (u, '*')[t]
@@ -28,6 +30,8 @@ def K(t, u):
         1|0|1
         1|1|0
     """
+    if '*' in (t, u):
+        return '*'
     t = int(t)
     u = int(u)
     return ('*', 1 - u)[t]
@@ -45,6 +49,8 @@ def D(t):
         0|0
         1|1
     """
+    if t == '*':
+        return '*'
     return int(t)
 
 
@@ -56,6 +62,8 @@ def T(t, u):
         1|0|1
         1|1|0
     """
+    if '*' in (t, u):
+        return '*'
     return int(t != u)
 
 
