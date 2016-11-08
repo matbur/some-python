@@ -59,3 +59,7 @@ class TestFlipFlops(unittest.TestCase):
         self.assertEqual(T('0', '1'), 1)
         self.assertEqual(T('1', '0'), 1)
         self.assertEqual(T('1', '1'), 0)
+
+
+if __name__ == '__main__':
+    unittest.main()
