@@ -45,10 +45,11 @@ def gen_row(row):
     return ' & '.join(row) + r' \\'
 
 
-def gen_tabular(rows):
+def gen_tabular(rows, sep=' '):
     """ Function combines all parts of table.
 
     :param rows: list of rows
+    :param sep: separator between rows
     :return: string, merged table
     """
     n = max(len(row) for row in rows)
@@ -58,30 +59,35 @@ def gen_tabular(rows):
         s.append(gen_row(row))
 
     s.append(end_tabular)
-    sep = ' '
     # sep = '\n'
     return '{0}{1}{0}'.format(sep, hline).join(s)
 
 
 def gen_moves(moves):
-    rows = [
-        (multicolumn(2, ''),),
-        ('t', 't+1')
-    ]
-    for t, u in moves:
-        rows.append((t, u))
+    n = len(moves[0])
+    rows = (
+        [multicolumn(n, '')],
+        ['t', 't+1'],
+        *moves
+    )
+
+    if n == 3:
+        rows[1].insert(0, 'Z')
+
     return gen_tabular(rows)
 
 
 def gen_bin_moves(moves):
-    rows = [
-        (multicolumn(3, 't'), multicolumn(3, 't+1')),
-        [subscript('Q', i) for i in '210'] * 2
-    ]
-    for t, u in moves:
-        t = f.format(t)
-        u = f.format(u)
-        rows.append((*t, *u))
+    n = len(moves[0])
+    rows = (
+        [multicolumn(3, 't'), multicolumn(3, 't+1')],
+        [subscript('Q', i) for i in '210'] * 2,
+        *[(*z, *f.format(t), *f.format(u)) for *z, t, u in moves]
+    )
+
+    if n == 3:
+        rows[0].insert(0, '')
+        rows[1].insert(0, 'Z')
 
     return gen_tabular(rows)
 
@@ -92,14 +98,10 @@ def gen_flip_flops(moves):
         [subscript(i, j) for j in '210' for i in 'JK']
     ]
 
-    for t, u in moves:
+    for *_, t, u in moves:
         t2, t1, t0 = f.format(t)
         u2, u1, u0 = f.format(u)
-        rows.append((
-            *JK(t2, u2),
-            *JK(t1, u1),
-            *JK(t0, u0),
-        ))
+        rows.append((*JK(t2, u2), *JK(t1, u1), *JK(t0, u0),))
 
     return gen_tabular(rows)
 
@@ -108,6 +110,24 @@ if __name__ == '__main__':
     # moves = [(i, (i + 1) % 8) for i in range(8)]
     series = [int(i) for i in '0123654']
     moves = [(v, series[(i + 1) % len(series)]) for i, v in enumerate(series)]
+
+    moves3 = [
+        (0, 0, 1),
+        (0, 1, 2),
+        (0, 2, 3),
+        (0, 3, 6),
+        (0, 4, 0),
+        (0, 5, 4),
+        (0, 6, 5),
+
+        (1, 0, 4),
+        (1, 1, 0),
+        (1, 2, 1),
+        (1, 3, 2),
+        (1, 4, 5),
+        (1, 5, 6),
+        (1, 6, 3),
+    ]
 
     print(gen_moves(moves))
     print(gen_bin_moves(moves))
