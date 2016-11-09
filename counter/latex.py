@@ -4,6 +4,8 @@
 
 from flip_flops import J, JK, K
 
+tab = [0, 1, 3, 2, 4, 5, 7, 6, 12, 13, 15, 14, 8, 9, 11, 10]
+
 file_header = r"""
 \documentclass[11pt]{article}
 
@@ -185,9 +187,21 @@ def gen_flip_flops(moves):
 
     for *_, t, u in moves:
         it = zip(to_bin(t), to_bin(u))
-        rows.append((*JK(*next(it)), *JK(*next(it)), *JK(*next(it))))
+        rows.append(sum([JK(*next(it)) for _ in '210'], ()))
 
     return gen_tabular(rows)
+
+
+def gen_flip_flop_content(moves, ff, n):
+    ff_map = {
+        'J': J,
+        'K': K,
+    }
+
+    l = tab[:]
+    for i, (*_, t, u) in zip(l[:], moves):
+        l[i] = ff_map[ff](to_bin(t)[2 - n], to_bin(u)[2 - n])
+    return l
 
 
 def gen_flip_flop(moves, ff, n):
@@ -198,17 +212,11 @@ def gen_flip_flop(moves, ff, n):
     :param n: number of column
     :return: string containing whole table
     """
-    ff_map = {
-        'J': J,
-        'K': K,
-    }
 
-    tab = [0, 1, 3, 2, 4, 5, 7, 6, 12, 13, 15, 14, 8, 9, 11, 10]
-    for i, (*_, t, u) in zip(tab[:], moves):
-        tab[i] = ff_map[ff](to_bin(t)[2 - n], to_bin(u)[2 - n])
+    content = gen_flip_flop_content(moves, ff, n)
 
     gg = gen_Gray()
-    gl = split(tab)
+    gl = split(content)
     rows = [
         [multicolumn(5, subscript(ff, n))],
         (gen_header(), *gen_Gray()),
@@ -245,8 +253,8 @@ if __name__ == '__main__':
         (1, 6, 3),
     ]
 
-    moves = complete_moves(moves)
-    print(moves)
+    full_moves = complete_moves(moves)
+    # print(moves)
 
     to_write = '\n'.join([
         file_header,
@@ -255,17 +263,19 @@ if __name__ == '__main__':
         gen_bin_moves(moves),
         gen_flip_flops(moves),
         '',
-        gen_flip_flop(moves, 'J', 2),
-        gen_flip_flop(moves, 'K', 2),
+        gen_flip_flop(full_moves, 'J', 2),
+        gen_flip_flop(full_moves, 'K', 2),
         '',
-        gen_flip_flop(moves, 'J', 1),
-        gen_flip_flop(moves, 'K', 1),
+        gen_flip_flop(full_moves, 'J', 1),
+        gen_flip_flop(full_moves, 'K', 1),
         '',
-        gen_flip_flop(moves, 'J', 0),
-        gen_flip_flop(moves, 'K', 0),
+        gen_flip_flop(full_moves, 'J', 0),
+        gen_flip_flop(full_moves, 'K', 0),
         '',
         file_footer
     ])
 
     with open('file.tex', 'w') as f:
         f.write(to_write)
+
+    print(gen_flip_flop_content(full_moves, 'J', 0))
