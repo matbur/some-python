@@ -1,10 +1,9 @@
 """ Module contains all necessary functions to generate complete
-    minimization method Karnaugh
+    minimization method Karnaugh.
 """
 
-from flip_flops import J, JK, K
-
-tab = [0, 1, 3, 2, 4, 5, 7, 6, 12, 13, 15, 14, 8, 9, 11, 10]
+from flip_flops import JK
+from minimization import gen_Gray, gen_flip_flop_content, to_bin
 
 file_header = r"""
 \documentclass[11pt]{article}
@@ -27,64 +26,23 @@ def gen_header():
     return 'Z' + subscript('Q', 2) + ' / ' + subscript('Q', 1) + subscript('Q', 0)
 
 
-def to_bin(v, n=3):
-    """ Function generates formatted int to bin.
-
-    :param v: value to transform
-    :param n: number of bits
-    :return: formatted bin number
-    """
-    if v == '*':
-        return '***'
-    return '{0:0>{1}b}'.format(v, n)
-
-
-def split(lst, n=4):
+def split(lst, width=4):
     """ Generator yields lst in parts.
 
     :param lst: list of elements
-    :param n: length of each part
+    :param width: length of each part
     """
-    for i in range(len(lst) // n):
-        yield lst[n * i:n * (i + 1)]
+    for i in range(len(lst) // width):
+        yield lst[width * i:width * (i + 1)]
 
 
-def complete_moves(moves):
-    """ Function fills missing moves with '*'.
-
-    :param moves: list of moves
-    :return: completed, sorted list of moves
-    """
-    filled = list(moves)
-    missing = set(range(8)) - set(i[-2] for i in filled)
-    if len(moves[0]) == 3:
-        for i in missing:
-            filled.append((0, i, '*'))
-            filled.append((1, i, '*'))
-    else:
-        for i in missing:
-            filled.append((i, '*'))
-
-    return sorted(filled)
-
-
-def gen_Gray(n=2):
-    """ Generator yields successive Gray numbers.
-
-    :param n: number of bits
-    """
-    for i in range(1 << n):
-        g = i ^ (i >> 1)
-        yield '{0:0>{1}b}'.format(g, n)
-
-
-def begin_tabular(n: int):
+def begin_tabular(width: int):
     """ Function returns opening tag for table.
 
-    :param n: number of column in table
+    :param width: number of column in table
     :return: string which starts table
     """
-    return r'\begin{tabular}{|' + 'c|' * n + '}'
+    return r'\begin{tabular}{|' + 'c|' * width + '}'
 
 
 def subscript(big, small):
@@ -97,14 +55,14 @@ def subscript(big, small):
     return '${}_{{{}}}$'.format(big, small)
 
 
-def multicolumn(n: int, value=''):
+def multicolumn(width: int, value=''):
     """ Function merges n columns and fills it with value.
 
-    :param n: number of merged columns
+    :param width: number of merged columns
     :param value: text in merged columns
     :return: string
     """
-    return r'\multicolumn{{{}}}{{|c|}}{{{}}}'.format(n, value)
+    return r'\multicolumn{{{}}}{{|c|}}{{{}}}'.format(width, value)
 
 
 def gen_row(row):
@@ -192,90 +150,32 @@ def gen_flip_flops(moves):
     return gen_tabular(rows)
 
 
-def gen_flip_flop_content(moves, ff, n):
-    ff_map = {
-        'J': J,
-        'K': K,
-    }
-
-    l = tab[:]
-    for i, (*_, t, u) in zip(l[:], moves):
-        l[i] = ff_map[ff](to_bin(t)[2 - n], to_bin(u)[2 - n])
-    return l
-
-
-def gen_flip_flop(moves, ff, n):
+def gen_flip_flop(moves, f_f, num):
     """ Function generates table ready to minimize
 
     :param moves: list of moves
-    :param ff: type of flip-flop
-    :param n: number of column
+    :param f_f: type of flip-flop
+    :param num: number of column
     :return: string containing whole table
     """
 
-    content = gen_flip_flop_content(moves, ff, n)
+    content = gen_flip_flop_content(moves, f_f, num)
 
-    gg = gen_Gray()
-    gl = split(content)
+    it_gray = gen_Gray()
+    it_con = split(content)
     rows = [
-        [multicolumn(5, subscript(ff, n))],
+        [multicolumn(5, subscript(f_f, num))],
         (gen_header(), *gen_Gray()),
-        (next(gg), *next(gl)),
-        (next(gg), *next(gl)),
+        (next(it_gray), *next(it_con)),
+        (next(it_gray), *next(it_con)),
     ]
 
     if len(moves[0]) == 3:
-        rows.append((next(gg), *next(gl)))
-        rows.append((next(gg), *next(gl)))
+        rows.append((next(it_gray), *next(it_con)))
+        rows.append((next(it_gray), *next(it_con)))
 
     return gen_tabular(rows)
 
 
 if __name__ == '__main__':
-    series = [int(i) for i in '0123654']
-    moves = [(v, series[(i + 1) % len(series)]) for i, v in enumerate(series)]
-
-    moves = [
-        (0, 0, 1),
-        (0, 1, 2),
-        (0, 2, 3),
-        (0, 3, 6),
-        (0, 4, 0),
-        (0, 5, 4),
-        (0, 6, 5),
-
-        (1, 0, 4),
-        (1, 1, 0),
-        (1, 2, 1),
-        (1, 3, 2),
-        (1, 4, 5),
-        (1, 5, 6),
-        (1, 6, 3),
-    ]
-
-    full_moves = complete_moves(moves)
-    # print(moves)
-
-    to_write = '\n'.join([
-        file_header,
-        '',
-        gen_moves(moves),
-        gen_bin_moves(moves),
-        gen_flip_flops(moves),
-        '',
-        gen_flip_flop(full_moves, 'J', 2),
-        gen_flip_flop(full_moves, 'K', 2),
-        '',
-        gen_flip_flop(full_moves, 'J', 1),
-        gen_flip_flop(full_moves, 'K', 1),
-        '',
-        gen_flip_flop(full_moves, 'J', 0),
-        gen_flip_flop(full_moves, 'K', 0),
-        '',
-        file_footer
-    ])
-
-    with open('file.tex', 'w') as f:
-        f.write(to_write)
-
-    print(gen_flip_flop_content(full_moves, 'J', 0))
+    pass

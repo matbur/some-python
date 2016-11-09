@@ -1,5 +1,5 @@
 file.pdf: file.tex latex.py
-	python latex.py
+	python main.py
 	pdflatex file.tex
 
 
