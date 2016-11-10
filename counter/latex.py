@@ -3,7 +3,7 @@
 """
 
 from flip_flops import JK
-from minimization import gen_Gray, gen_flip_flop_content, to_bin
+from minimization import gen_Gray, gen_flip_flop_content, get_minterms, minimize, to_bin
 
 file_header = r"""
 \documentclass[11pt]{article}
@@ -16,6 +16,14 @@ file_footer = r'\end{document}'
 
 hline = r'\hline'
 end_tabular = r'\end{tabular}'
+
+
+# TODO: write tests and docstring
+def overline(text, isinside=False):
+    result = r'\overline{{{}}}'.format(text)
+    if isinside:
+        return result
+    return '$' + result + '$'
 
 
 def gen_header():
@@ -45,14 +53,17 @@ def begin_tabular(width: int):
     return r'\begin{tabular}{|' + 'c|' * width + '}'
 
 
-def subscript(big, small):
+def subscript(big, small, isinside=False):
     """ Function returns proper syntax for subscript.
 
     :param big: value which should be up and big
     :param small: value which should be down and small
     :return: string in Latex syntax
     """
-    return '${}_{{{}}}$'.format(big, small)
+    result = '{}_{{{}}}'.format(big, small)
+    if isinside:
+        return result
+    return '$' + result + '$'
 
 
 def multicolumn(width: int, value=''):
@@ -175,6 +186,23 @@ def gen_flip_flop(moves, f_f, num):
         rows.append((next(it_gray), *next(it_con)))
 
     return gen_tabular(rows)
+
+
+def change_negation(function):
+    l = function.split('/')
+    for i, v in enumerate(l[1:], 1):
+        l[i] = overline(v[0], True) + v[1:]
+    return ''.join(l)
+
+
+def generate_function(moves, f_f, num):
+    data = gen_flip_flop_content(moves, f_f, num)
+    minterms, dontcares = get_minterms(data)
+    signals = ['Z', subscript('Q', 2, True), subscript('Q', 1, True), subscript('Q', 0, True)]
+    minimized = minimize(minterms, dontcares, signals)
+    changed = change_negation(minimized)
+    function = '${} = {}$'.format(subscript(f_f, num, True), changed)
+    return function
 
 
 if __name__ == '__main__':

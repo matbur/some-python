@@ -1,10 +1,10 @@
-from latex import file_footer, file_header, gen_bin_moves, gen_flip_flop, gen_flip_flops, gen_moves
-from minimization import complete_moves, gen_flip_flop_content
+from latex import file_footer, file_header, gen_bin_moves, gen_flip_flop, gen_flip_flops, gen_moves, generate_function
+from minimization import complete_moves
 
 
 def main():
-    series = [int(i) for i in '0123654']
-    moves = [(v, series[(i + 1) % len(series)]) for i, v in enumerate(series)]
+    # series = [int(i) for i in '0123654']
+    # moves = [(v, series[(i + 1) % len(series)]) for i, v in enumerate(series)]
 
     moves = [
         (0, 0, 1),
@@ -36,19 +36,29 @@ def main():
         gen_flip_flop(full_moves, 'J', 2),
         gen_flip_flop(full_moves, 'K', 2),
         '',
+        generate_function(full_moves, 'J', 2),
+        '',
+        generate_function(full_moves, 'K', 2),
+        '',
         gen_flip_flop(full_moves, 'J', 1),
         gen_flip_flop(full_moves, 'K', 1),
         '',
+        generate_function(full_moves, 'J', 1),
+        '',
+        generate_function(full_moves, 'K', 1),
+        '',
         gen_flip_flop(full_moves, 'J', 0),
         gen_flip_flop(full_moves, 'K', 0),
+        '',
+        generate_function(full_moves, 'J', 0),
+        '',
+        generate_function(full_moves, 'K', 0),
         '',
         file_footer
     ])
 
     with open('file.tex', 'w') as f:
         f.write(to_write)
-
-    print(gen_flip_flop_content(full_moves, 'J', 0))
 
 
 if __name__ == '__main__':

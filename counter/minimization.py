@@ -34,7 +34,6 @@ def complete_moves(moves):
     else:
         for i in missing:
             filled.append((i, '*'))
-
     return sorted(filled)
 
 
@@ -61,12 +60,12 @@ def gen_flip_flop_content(moves, f_f, num):
         'K': K,
     }
 
-    lst = fields[:]
-    for i, (*_, t, u) in zip(lst[:], moves):
+    content = fields[:]
+    for i, (*_, t, u) in zip(content[:], moves):
         t_n = to_bin(t)[2 - num]
         u_n = to_bin(u)[2 - num]
-        lst[i] = ff_map[f_f](t_n, u_n)
-    return lst
+        content[i] = ff_map[f_f](t_n, u_n)
+    return content
 
 
 def group(minterms):
@@ -75,6 +74,9 @@ def group(minterms):
     :param minterms: list of items to group
     :return: grouped list of lists
     """
+    # print('group')
+    # print('\tminterms', minterms)
+
     if not minterms:
         return []
 
@@ -83,6 +85,8 @@ def group(minterms):
     grouped = [[] for _ in range(size)]
     for i in minterms:
         n = i.count('1')
+        if i in grouped[n]:
+            continue
         grouped[n].append(i)
     return grouped
 
@@ -96,12 +100,12 @@ def merge(this, other):
     """
     merged = []
     for i, j in zip(this, other):
-        merged.append(i if i == j else '-')
+        merged.append(('-', i)[i == j])
     return ''.join(merged)
 
 
 def like(this, other):
-    """ Function checks if two given minterms differ in one position.
+    """ Function checks if two given implicants differ in one position.
 
     :param this: 1st minterm
     :param other: 2nd minterm
@@ -110,17 +114,38 @@ def like(this, other):
     return sum(i != j for i, j in zip(this, other)) == 1
 
 
-def get_signal(implicant, ind, signal):
+def join(this, other):
+    """
+
+    :param this: 
+    :param other: 
+    :return: 
+    """
+    joined = []
+    for i in this:
+        for j in other:
+            k = {i, j} if isinstance(i, str) else i | j
+            if k in joined:
+                continue
+            joined.append(k)
+    return joined
+
+
+def get_signal(implicant, index, signal):
     """
 
     :param implicant:
-    :param ind: index of signal
-    :param signal: names of signals
+    :param index: index of signal
+    :param signal: name of signal
     :return: proper signal symbol
     """
-    if implicant[ind] == '-':
+    # print('get_signal')
+    # print('\timplicant', implicant)
+    # print('\tindex', index)
+    # print('\tsignal', signal)
+    if implicant[index] == '-':
         return ''
-    if implicant[ind] == '0':
+    if implicant[index] == '0':
         return '/' + signal
     return signal
 
@@ -132,6 +157,9 @@ def get_minterm(implicant, signals):
     :param signals: names of signals
     :return:
     """
+    # print('get_minterm')
+    # print('\timplicant', implicant)
+    # print('\tsignals', signals)
     return ''.join(get_signal(implicant, i, v) for i, v in enumerate(signals))
 
 
@@ -142,7 +170,16 @@ def get_function(implicants, signals):
     :param signals: names of signals
     :return: boolean function
     """
-    return ' + '.join(get_minterm(i, signals) for i in implicants)
+
+    # print('get_function')
+    # print('\timplicants', implicants)
+    # print('\tsignals', signals)
+
+    def sort_key(x):
+        return ['10-'.index(i) for i in x]
+
+    sorted_implicants = sorted(implicants, key=sort_key)
+    return ' + '.join(get_minterm(i, signals) for i in sorted_implicants)
 
 
 def get_unused(implicants, used):
@@ -152,49 +189,156 @@ def get_unused(implicants, used):
     :param used: set of implicants which were used
     :return: set of unused implicants
     """
-    set_implicants = set(sum((i for i in implicants), []))
-    return set_implicants - used
+    # print('gen_numbers')
+    # print('\timplicants', implicants)
+    # print('\tused', used)
+
+    implicants_set = set(sum(implicants, []))
+    return implicants_set - used
 
 
 def step(minterms):
     """ Function implements one step im minimization.
 
-    :param minterms: list of minterms
-    :return: tuple containing list of minterms and unused minterms
+    :param minterms: list of implicants
+    :return: tuple containing list of implicants and used implicants
     """
-    lst = []
+    # print('step')
+    # print('\tminterms', minterms)
+
+    result = []
     used = set()
     for i, j in zip(minterms, minterms[1:]):
         for x in i:
             for y in j:
                 if not like(x, y):
                     continue
-
-                lst.append(merge(x, y))
+                result.append(merge(x, y))
                 used.add(x)
                 used.add(y)
-    return lst, get_unused(minterms, used)
+    return result, (minterms, used)
 
 
-def minimize(minterms, signals):
-    """ Function generates boolean function from list of minterms.
-
-    :param minterms: list of minterms
-    :param signals: names of signals
-    :return: boolean function
+def gen_numbers(implicant):
     """
-    minterms = [to_bin(i, 4) for i in minterms]
+
+    :param implicant: 
+    """
+    num = implicant.count('-')
+    for i in range(1 << num):
+        imp = implicant
+        for bit in to_bin(i, num):
+            imp = imp.replace('-', bit, 1)
+        yield imp
+
+
+def group_implicants(imp_num, minterms):
+    """
+
+    :param imp_num: 
+    :param minterms: 
+    :return: 
+    """
+    grouped = {}
+    for term in minterms:
+        grouped[term] = []
+        for imp, num in imp_num:
+            if num != to_bin(term, 4):
+                continue
+            grouped[term].append(imp)
+    return list(grouped.values())
+
+
+def pair_implicants(implicants):
+    """
+
+    :param implicants: 
+    """
+    for imp in implicants:
+        for num in gen_numbers(imp):
+            yield imp, num
+
+
+def Quine_McCluskey_method(minterms):
+    """
+
+    :param minterms: 
+    :return: 
+    """
+    # print('Quine_McCluskey_method')
+    # print('\tminterms', minterms)
+
     unused = set()
     for _ in range(5):
         minterms = group(minterms)
-        minterms, s = step(minterms)
-        unused |= s
-    return get_function(unused, signals)
+        minterms, used = step(minterms)
+        unused |= get_unused(*used)
+        # print('unused', unused)
+    return unused
+
+
+def Petricks_method(unused, minterms):
+    """
+
+    :param unused: 
+    :param minterms: 
+    :return: 
+    """
+    # print('Petricks_method')
+    # print('\tunused =', unused)
+    # print('\tminterms =', minterms)
+
+    pairs = tuple(pair_implicants(unused))
+    # print('pairs =', pairs)
+
+    results = group_implicants(pairs, minterms)
+    # print('results', results)
+
+    while len(results) != 1:
+        results = [join(i, j) for i, j in zip(results, results[1:])]
+
+    result = results[0]
+    if isinstance(result[0], str):
+        return result
+    return min(result, key=len)
+
+
+def minimize(minterms, dontcares, signals):
+    """ Function generates boolean function.
+
+    :param minterms: list of minterms for which output function will be 1
+    :param dontcares: list of minterms for which we don't care about the output
+    :param signals: names of signals
+    :return: boolean function
+    """
+    if not minterms:
+        return '0'
+    if len(minterms) + len(dontcares) == 16:
+        return '1'
+
+    united_minterms = [to_bin(i, 4) for i in minterms + dontcares]
+    unused_implicants = Quine_McCluskey_method(united_minterms)
+    minimized = Petricks_method(unused_implicants, minterms)
+    return get_function(minimized, signals)
+
+
+def get_minterms(data):
+    minterms = []
+    dontcares = []
+    list_map = {
+        1: minterms,
+        '*': dontcares,
+        0: []
+    }
+    for i, v in zip(fields, data):
+        list_map[v].append(i)
+
+    return minterms, dontcares
 
 
 if __name__ == '__main__':
-    # l = [0, 1, 2, 8, 10, 11, 14, 15]
-    # l = [0, 1, 2, 4, 5, 6, 8, 9, 12, 13, 14]
-    l = [4, 8, 10, 11, 12, 15] + [9, 14]
-    print(minimize(l, 'abcd'))
-    # print(minimize(l, ['Z', 'Q2', 'Q1', 'Q0']))
+    minterms = [0, 1, 2, 4, 5, 6, 8, 9, 12, 13, 14]
+    dontcares = []
+    signals = 'abcd'
+
+    print(minimize(minterms, dontcares, signals))
